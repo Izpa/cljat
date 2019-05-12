@@ -1,52 +1,38 @@
 (ns cljat.events
   (:require
-    [re-frame.core :as rf]
-    [ajax.core :as ajax]))
+   [cljat.db    :refer [default-db messages->local-store]]
+   [re-frame.core :refer [reg-event-db reg-event-fx inject-cofx path after]]
+   [cljs.spec.alpha :as s]))
 
-;;dispatchers
+(defn check-and-throw
+  "Throws an exception if `db` doesn't match the Spec `a-spec`."
+  [a-spec db]
+  (when-not (s/valid? a-spec db)
+    (throw (ex-info (str "spec check failed: " (s/explain-str a-spec db)) {}))))
 
-(rf/reg-event-db
-  :navigate
-  (fn [db [_ route]]
-    (assoc db :route route)))
+(def check-spec-interceptor (after (partial check-and-throw :cljat.db/db)))
 
-(rf/reg-event-db
-  :set-docs
-  (fn [db [_ docs]]
-    (assoc db :docs docs)))
+(def ->local-store (after messages->local-store))
 
-(rf/reg-event-fx
-  :fetch-docs
-  (fn [_ _]
-    {:http-xhrio {:method          :get
-                  :uri             "/docs"
-                  :response-format (ajax/raw-response-format)
-                  :on-success       [:set-docs]}}))
+(def message-interceptors [check-spec-interceptor
+                           (path :messages)
+                           ->local-store])
 
-(rf/reg-event-db
-  :common/set-error
-  (fn [db [_ error]]
-    (assoc db :common/error error)))
+;; TODO remove after add working with server db
+(defn allocate-next-id
+  [messages]
+  ((fnil inc 0) (last (keys messages))))
 
-;;subscriptions
+(reg-event-fx
+ :initialise-db
+ [(inject-cofx :local-store-messages)
+  check-spec-interceptor]
+ (fn [{:keys [db local-store-messages]} _]
+   {:db (assoc default-db :messages local-store-messages)}))
 
-(rf/reg-sub
-  :route
-  (fn [db _]
-    (-> db :route)))
-
-(rf/reg-sub
-  :page
-  :<- [:route]
-  (fn [route _]
-    (-> route :data :name)))
-
-(rf/reg-sub
-  :docs
-  (fn [db _]
-    (:docs db)))
-
-(rf/reg-sub
-  :common/error
-  (fn [db _]
-    (:common/error db)))
+(reg-event-db
+ :new-message
+ message-interceptors
+ (fn [messages [_ author timestamp text]]
+   (let [id (allocate-next-id messages)]
+     (assoc messages id {:id id :author author :timestamp timestamp :text text}))))
