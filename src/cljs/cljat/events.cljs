@@ -1,6 +1,6 @@
 (ns cljat.events
   (:require
-   [cljat.db    :refer [default-db messages->local-store]]
+   [cljat.db :refer [default-db messages->local-store]]
    [re-frame.core :refer [reg-event-db reg-event-fx inject-cofx path after]]
    [cljs.spec.alpha :as s]))
 
@@ -26,7 +26,8 @@
 (reg-event-fx
  :initialise-db
  [(inject-cofx :local-store-messages)
-  check-spec-interceptor]
+  check-spec-interceptor
+  ]
  (fn [{:keys [db local-store-messages]} _]
    {:db (assoc default-db :messages local-store-messages)}))
 

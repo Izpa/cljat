@@ -1,12 +1,12 @@
 (ns cljat.db
-  ;(:require-macros
-   ;[cljat.env :refer [cljs-env]])
+  (:require-macros
+   [cljs.core.async.macros :refer [go]])
   (:require [cljs.reader]
-            [cljs.spec.alpha :as s]
-            [cljs.core.async :refer [<!]]
             [cljat.env :as env]
             [haslett.client :as ws]
             [haslett.format :as fmt]
+            [cljs.core.async :refer [<!]]
+            [cljs.spec.alpha :as s]
             [re-frame.core :as re-frame]))
 
 (s/def ::id int?)
@@ -17,10 +17,13 @@
 (s/def ::messages (s/and
                    (s/map-of ::id ::message)
                    #(map? %)
-                   ; TODO почему-то не работает
-                   ;#(sorted? %)
+                   #(sorted? %)
                    ))
 (s/def ::db (s/keys :req-un [::messages ::ws]))
+
+(def default-db {:messages (sorted-map)
+                 :ws (go (<! (ws/connect (str "ws://" env/domain "/ws") {:format fmt/edn})))})
+
 
 (def ls-key "cljat-reframe")
 
@@ -36,9 +39,3 @@
           (into (sorted-map)
                 (some->> (.getItem js/localStorage ls-key)
                          (cljs.reader/read-string))))))
-
-(def default-db {:messages (sorted-map)
-                 :ws (<! (ws/connect (str "ws://" env/domain "/ws")
-                          ;(cljs-env :domain)
-                                     {:format fmt/edn}))})
-

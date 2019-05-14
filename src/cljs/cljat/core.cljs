@@ -10,6 +10,8 @@
 (devtools/install!)
 (enable-console-print!)
 
+(reframe/dispatch-sync [:initialise-db])
+
 (defn init! []
   (reframe/clear-subscription-cache!)
   (reagent/render [cljat.views/cljat-app]
