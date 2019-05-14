@@ -12,3 +12,15 @@
    (subscribe [:sorted-messages]))
  (fn [sorted-messages query-v _]
    (vals sorted-messages)))
+
+(defn db-login
+  [db _]
+  (:login db))
+(reg-sub :db-login db-login)
+
+(reg-sub
+ :login
+ (fn [query-v _]
+   (subscribe [:db-login]))
+ (fn [db-login query-v _]
+   db-login))

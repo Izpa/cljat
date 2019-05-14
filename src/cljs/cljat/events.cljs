@@ -1,4 +1,6 @@
 (ns cljat.events
+  (:require-macros
+   [cljs.core.async.macros :refer [go]])
   (:require
    [cljat.db :refer [default-db messages->local-store]]
    [re-frame.core :refer [reg-event-db reg-event-fx inject-cofx path after]]
@@ -18,7 +20,6 @@
                            (path :messages)
                            ->local-store])
 
-;; TODO remove after add working with server db
 (defn allocate-next-id
   [messages]
   ((fnil inc 0) (last (keys messages))))
@@ -26,14 +27,18 @@
 (reg-event-fx
  :initialise-db
  [(inject-cofx :local-store-messages)
-  check-spec-interceptor
-  ]
+  check-spec-interceptor]
  (fn [{:keys [db local-store-messages]} _]
    {:db (assoc default-db :messages local-store-messages)}))
 
 (reg-event-db
- :new-message
+ :receive-message
  message-interceptors
- (fn [messages [_ author timestamp text]]
-   (let [id (allocate-next-id messages)]
-     (assoc messages id {:id id :author author :timestamp timestamp :text text}))))
+ (fn [messages [_ id author timestamp text]]
+   (assoc messages id {:id id :author author :timestamp timestamp :text text})))
+
+(reg-event-db
+ :send-message
+ (fn [{:keys [ws]} text]
+   (go (>! (:sink ws)
+           {:message text}))))
