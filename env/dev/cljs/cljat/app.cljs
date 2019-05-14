@@ -1,4 +1,4 @@
-(ns ^:figwheel-no-load cljat.app
+(ns^:figwheel-no-load cljat.app
   (:require
     [cljat.core :as core]
     [cljs.spec.alpha :as s]

@@ -1,1 +1,1 @@
-web: java $JVM_OPTS -cp target/uberjar/cljat.jar clojure.main -m cljat.core
+web: java -cp target/uberjar/cljat.jar clojure.main -m cljat.core

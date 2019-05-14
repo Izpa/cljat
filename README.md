@@ -1,6 +1,6 @@
 # cljat
 
-generated using Luminus version "3.29"
+generated using Luminus version "3.32"
 
 FIXME
 

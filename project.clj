@@ -3,7 +3,8 @@
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
 
-  :dependencies [[ch.qos.logback/logback-classic "1.2.3"]
+  :dependencies [[buddy "2.0.0"]
+                 [ch.qos.logback/logback-classic "1.2.3"]
                  [cheshire "5.8.1"]
                  [cljs-ajax "0.8.0"]
                  [clojure.java-time "0.3.2"]
@@ -16,7 +17,7 @@
                  [luminus-migrations "0.6.5"]
                  [luminus-transit "0.1.1"]
                  [luminus/ring-ttl-session "0.3.2"]
-                 [markdown-clj "1.0.8"]
+                 [markdown-clj "1.10.0"]
                  [metosin/muuntaja "0.6.4"]
                  [metosin/reitit "0.3.1"]
                  [metosin/ring-http-response "0.9.1"]
@@ -37,7 +38,9 @@
                  [ring/ring-defaults "0.3.2"]
                  [selmer "1.12.12"]
 
-                 [binaryage/devtools "0.9.10"]]
+                 [binaryage/devtools "0.9.10"]
+                 [haslett "0.1.6"]
+                 [environ "1.1.0"]]
 
   :min-lein-version "2.0.0"
   
@@ -47,7 +50,8 @@
   :target-path "target/%s/"
   :main ^:skip-aot cljat.core
 
-  :plugins [[lein-cljsbuild "1.1.7"]]
+  :plugins [[lein-cljsbuild "1.1.7"]
+            [lein-kibit "0.1.2"]]
   :clean-targets ^{:protect false}
   [:target-path [:cljsbuild :builds :app :compiler :output-dir] [:cljsbuild :builds :app :compiler :output-to]]
   :figwheel
@@ -61,8 +65,7 @@
   :profiles
   {:uberjar {:omit-source true
              :prep-tasks ["compile" ["cljsbuild" "once" "min"]]
-             :cljsbuild
-             {:builds
+             :cljsbuild{:builds
               {:min
                {:source-paths ["src/cljc" "src/cljs" "env/prod/cljs"]
                 :compiler
@@ -75,7 +78,6 @@
                  :closure-warnings
                  {:externs-validation :off :non-standard-jsdoc :off}
                  :externs ["react/externs/react.js"]}}}}
-             
              
              :aot :all
              :uberjar-name "cljat.jar"
@@ -99,8 +101,7 @@
                   :plugins      [[com.jakemccrary/lein-test-refresh "0.24.1"]
                                  [lein-doo "0.1.11"]
                                  [lein-figwheel "0.5.18"]]
-                  :cljsbuild
-                  {:builds
+                  :cljsbuild{:builds
                    {:app
                     {:source-paths ["src/cljs" "src/cljc" "env/dev/cljs"]
                      :figwheel {:on-jsload "cljat.core/mount-components"}
@@ -116,7 +117,6 @@
                       :pretty-print true}}}}
                   
                   
-                  
                   :doo {:build "test"}
                   :source-paths ["env/dev/clj"]
                   :resource-paths ["env/dev/resources"]
@@ -125,7 +125,7 @@
                                (pjstadig.humane-test-output/activate!)]}
    :project/test {:jvm-opts ["-Dconf=test-config.edn"]
                   :resource-paths ["env/test/resources"]
-                  :cljsbuild
+                  :cljsbuild 
                   {:builds
                    {:test
                     {:source-paths ["src/cljc" "src/cljs" "test/cljs"]
