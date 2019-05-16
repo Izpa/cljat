@@ -8,12 +8,12 @@
     (when (some? error) [:p (str error)])))
 
 (defn login []
-  (fn [_]
-    (let [username (reagent/atom "")
-          password (reagent/atom "")
-          send #(let [usr (-> @username str str/trim)
-                      pass (-> @password str str/trim)]
-                  (dispatch [:login-request usr pass]))]
+  (let [username (reagent/atom "")
+        password (reagent/atom "")
+        send #(let [usr (-> @username str str/trim)
+                    pass (-> @password str str/trim)]
+                (dispatch [:login-request usr pass]))]
+    (fn []
       [:div
        [:input {:type "text"
                 :placeholder "Username"
@@ -29,12 +29,11 @@
        [:button  {:on-click send} "Login"]
        [error]])))
 
-(defn message []
-  (fn [{:keys [id author timestamp text]}]
-    [:li
-     [:p author]
-     [:p timestamp]
-     [:p text]]))
+(defn message [{:keys [id author timestamp text]}]
+  [:li
+   [:p author]
+   [:p timestamp]
+   [:p text]])
 
 (defn messages []
   [:ul#messages
@@ -46,7 +45,7 @@
         send #(let [v (-> @val str str/trim)]
                 (dispatch [:send-message v])
                 (reset! val ""))]
-    (fn [_]
+    (fn []
       [:div
        [:input {:type "text"
                 :placeholder "Type your message here"
@@ -57,14 +56,14 @@
        [:button  {:on-click send} "Send"]])))
 
 (defn logout []
-  [:button  {:on-click (dispatch [:logout-request])} "Logout"])
+  (fn []
+    [:button  {:on-click (dispatch [:logout-request])} "Logout"]))
 
 (defn chat []
-  (fn [_]
-    [:div
-   ;[logout]
-    [messages]
-    [send-message]]))
+  [:div
+  ;[logout]
+  [messages]
+  [send-message]])
 
 (defn cljat-app []
   (if (nil? @(subscribe [:login]))
