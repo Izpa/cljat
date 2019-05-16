@@ -25,7 +25,7 @@
     (response/unauthorized)))
 
 (defn logout-handler [{session :session}]
-  (assoc (response/ok "ok")
+  (assoc (response/ok "{\"status\": \"success\"}")
          :session (dissoc session :identity)))
 
 (defn login-routes []

@@ -56,14 +56,15 @@
        [:button  {:on-click send} "Send"]])))
 
 (defn logout []
-  (fn []
-    [:button  {:on-click (dispatch [:logout-request])} "Logout"]))
+  (let [click (dispatch [:logout-request])]
+    (fn []
+      [:button  {:on-click click} "Logout"])))
 
 (defn chat []
   [:div
-  ;[logout]
-  [messages]
-  [send-message]])
+   [logout]
+   [messages]
+   [send-message]])
 
 (defn cljat-app []
   (if (nil? @(subscribe [:login]))

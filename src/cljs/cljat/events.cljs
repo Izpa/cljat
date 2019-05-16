@@ -62,14 +62,14 @@
    {:http-xhrio {:method :get
                  :uri (str "http://" env/domain "/logout")
                  :response-format (ajax/json-response-format {:keywords? true})
-                 :format          (ajax/json-request-format)}
-    :db (merge db {:login nil :ws nil})
-    :dispatch [:disconnect-ws]}))
+                 :format (ajax/json-request-format)
+                 :on-success [:logout]}}))
 
 (reg-event-db
- :disconnect-ws
- (fn [{ws :ws} _]
-   (ws-client/close ws)))
+ :logout
+ (fn [{ws :ws :as db} _]
+   (ws-client/close ws)
+   (merge db {:login nil :ws nil})))
 
 (reg-event-db
  :receive-message
