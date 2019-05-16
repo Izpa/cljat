@@ -6,8 +6,7 @@
    [cognitect.transit :as t]
    [clojure.tools.logging :as log]
    [cljat.middleware :as middleware]
-   [clojure.data.json :as json]
-   [java-time :as java-time]))
+   [clojure.data.json :as json]))
 
 (defonce channels (atom #{}))
 

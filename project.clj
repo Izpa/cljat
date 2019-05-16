@@ -42,7 +42,7 @@
                  [haslett "0.1.6"]
                  [day8.re-frame/http-fx "0.1.6"]
                  [org.clojure/data.json "0.2.6"]
-                 [clojure.java-time "0.3.2"]]
+                 [com.cognitect/transit-cljs "0.8.256"]]
 
   :min-lein-version "2.0.0"
   

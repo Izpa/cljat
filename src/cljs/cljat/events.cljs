@@ -9,7 +9,8 @@
    [haslett.format :as fmt]
    [day8.re-frame.http-fx]
    [ajax.core :as ajax]
-   [cljs.core.async :refer [<!]]))
+   [cljs.core.async :refer [<! >!]]
+   [cognitect.transit :as t]))
 
 (reg-event-db
  :initialise-db
@@ -19,11 +20,12 @@
     :login nil
     :error nil}))
 
-(defn reg-ws-dispatcher
-  [ws]
+
+(defn reg-ws-dispatcher [ws]
   (go-loop []
-    (when-let [message (<! (:source ws))]
-      (dispatch [:message-received (message)])
+    (when-let [message (-> (<! (:source ws))
+                           (#(t/read (t/reader :json) %)))]
+      (dispatch [:receive-message message])
       (recur))))
 
 (reg-event-db
@@ -71,10 +73,11 @@
 
 (reg-event-db
  :receive-message
- (fn [db [id author timestamp text]]
+ (fn [db [_ {:strs [id author timestamp text]}]]
    (assoc-in db [:messages id] {:id id :author author :timestamp timestamp :text text})))
 
 (reg-event-db
  :send-message
- (fn [{ws :ws} [_ text]]
-   (go (>! (:sink ws) text))))
+ (fn [{ws :ws :as db} [_ text]]
+   (go (>! (:sink ws) text))
+   db))
