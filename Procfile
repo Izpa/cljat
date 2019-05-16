@@ -1,2 +1,2 @@
-release: java $JVM_OPTS -jar target/uberjar/cljat.jar migrate
-web: java -cp target/uberjar/cljat.jar clojure.main -m cljat.core
+release: lein run migrate
+web: java $JVM_OPTS -cp target/uberjar/cljat.jar clojure.main -m cljat.core
