@@ -3,7 +3,8 @@
    [org.httpkit.server
     :refer [send! with-channel on-close on-receive]]
    [cognitect.transit :as t]
-   [clojure.tools.logging :as log]))
+   [clojure.tools.logging :as log]
+   [cljat.middleware :as middleware]))
 
 (defonce channels (atom #{}))
 
@@ -26,5 +27,8 @@
     (on-close channel (partial disconnect! channel))
     (on-receive channel #(notify-clients %))))
 
-(def websocket-routes
-  ["/ws" ws-handler])
+(defn websocket-routes []
+  [""
+   {:middleware [middleware/wrap-auth
+                 middleware/wrap-restricted]}
+   ["/ws" ws-handler]])

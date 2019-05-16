@@ -3,14 +3,17 @@
             [re-frame.core :refer [subscribe dispatch]]
             [clojure.string :as str]))
 
+(defn error []
+  (let [error  @(subscribe [:error])]
+    (when (some? error) [:p (str error)])))
+
 (defn login []
-  (let [username (reagent/atom "")
-        password (reagent/atom "")
-        on-send #(when (seq %) (dispatch [:login %1 %2]))
-        send #(let [u (-> @username str str/trim)
-                    p (-> @password str str/trim)]
-                (on-send u p))]
-    (fn [_]
+  (fn [_]
+    (let [username (reagent/atom "")
+          password (reagent/atom "")
+          send #(let [usr (-> @username str str/trim)
+                    pass (-> @password str str/trim)]
+                  (dispatch [:login-request usr pass]))]
       [:div
        [:input {:type "text"
                 :placeholder "Username"
@@ -23,7 +26,8 @@
                 :value @password
                 :on-change   #(reset! password (-> % .-target .-value))
                 :on-key-down #(when (= (.-which %) 13) (send))}]
-       [:button  {:on-click send} "Login"]])))
+       [:button  {:on-click send} "Login"]
+       [error]])))
 
 (defn message []
   (fn [{:keys [id author timestamp text]}]
@@ -37,11 +41,10 @@
    (for [msg @(subscribe [:messages])]
      ^{:key (:id msg)} [message msg])])
 
-(defn new-message []
+(defn send-message []
   (let [val (reagent/atom "")
-        on-send #(when (seq %) (dispatch [:receive-message 1 "author1" 1122 %]))
         send #(let [v (-> @val str str/trim)]
-                (on-send v)
+                (dispatch [:send-message v])
                 (reset! val ""))]
     (fn [_]
       [:div
@@ -53,12 +56,17 @@
                 :on-key-down #(when (= (.-which %) 13) (send))}]
        [:button  {:on-click send} "Send"]])))
 
+(defn logout []
+  [:button  {:on-click (dispatch [:logout-request])} "Logout"])
+
 (defn chat []
-  [:div
-   [messages]
-   [new-message]])
+  (fn [_]
+    [:div
+   ;[logout]
+    [messages]
+    [send-message]]))
 
 (defn cljat-app []
-  (if @(subscribe [:login])
-    [chat]
-    [login]))
+  (if (nil? @(subscribe [:login]))
+    [login]
+    [chat]))

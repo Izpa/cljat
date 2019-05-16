@@ -1,44 +1,81 @@
 (ns cljat.events
   (:require-macros
-   [cljs.core.async.macros :refer [go]])
+   [cljs.core.async.macros :refer [go go-loop]])
   (:require
-   [cljat.db :refer [default-db messages->local-store]]
-   [re-frame.core :refer [reg-event-db reg-event-fx inject-cofx path after]]
-   [cljs.spec.alpha :as s]))
+   [re-frame.core :refer [reg-event-db reg-event-fx dispatch]]
+   [cljs.spec.alpha :as s]
+   [cljat.env :as env]
+   [haslett.client :as ws-client]
+   [haslett.format :as fmt]
+   [day8.re-frame.http-fx]
+   [ajax.core :as ajax]
+   [cljs.core.async :refer [<!]]))
 
-(defn check-and-throw
-  "Throws an exception if `db` doesn't match the Spec `a-spec`."
-  [a-spec db]
-  (when-not (s/valid? a-spec db)
-    (throw (ex-info (str "spec check failed: " (s/explain-str a-spec db)) {}))))
+(reg-event-db
+ :initialise-db
+ (fn [_ _]
+   {:messages (sorted-map)
+    :ws nil
+    :login nil
+    :error nil}))
 
-(def check-spec-interceptor (after (partial check-and-throw :cljat.db/db)))
+(defn reg-ws-dispatcher
+  [ws]
+  (go-loop []
+    (when-let [message (<! (:source ws))]
+      (dispatch [:message-received (message)])
+      (recur))))
 
-(def ->local-store (after messages->local-store))
+(reg-event-db
+ :login
+ (fn [db [_ login]]
+   (go
+     (let [ws (<! (ws-client/connect (str "ws://" env/domain "/ws")))]
+       (reg-ws-dispatcher ws)
+       (merge db {:ws ws
+                  :login login
+                  :error nil})))))
 
-(def message-interceptors [check-spec-interceptor
-                           (path :messages)
-                           ->local-store])
-
-(defn allocate-next-id
-  [messages]
-  ((fnil inc 0) (last (keys messages))))
+(reg-event-db
+ :error
+ (fn [db [_ error]]
+   (assoc db :error error)))
 
 (reg-event-fx
- :initialise-db
- [(inject-cofx :local-store-messages)
-  check-spec-interceptor]
- (fn [{:keys [db local-store-messages]} _]
-   {:db (assoc default-db :messages local-store-messages)}))
+ :login-request
+ (fn [_ [_ login password]]
+   {:http-xhrio {:method :post
+                 :uri (str "http://" env/domain "/login")
+                 :on-success [:login login]
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :format (ajax/json-request-format)
+                 :on-failure [:error "Incorrect password for exist user"]
+                 :body (doto (js/FormData.)
+                         (.append "login" login)
+                         (.append "password" password))}}))
+
+(reg-event-fx
+ :logout-request
+ (fn [{:keys [db]} _]
+   {:http-xhrio {:method :get
+                 :uri (str "http://" env/domain "/logout")
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :format          (ajax/json-request-format)}
+    :db (merge db {:login nil :ws nil})
+    :dispatch [:disconnect-ws]}))
+
+(reg-event-db
+ :disconnect-ws
+ (fn [{ws :ws} _]
+   (ws-client/close ws)))
 
 (reg-event-db
  :receive-message
- message-interceptors
- (fn [messages [_ id author timestamp text]]
-   (assoc messages id {:id id :author author :timestamp timestamp :text text})))
+ (fn [db [id author timestamp text]]
+   (assoc-in db [:messages id] {:id id :author author :timestamp timestamp :text text})))
 
 (reg-event-db
  :send-message
- (fn [{:keys [ws]} text]
+ (fn [{ws :ws} text]
    (go (>! (:sink ws)
            {:message text}))))

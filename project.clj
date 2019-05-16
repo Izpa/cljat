@@ -40,7 +40,7 @@
 
                  [binaryage/devtools "0.9.10"]
                  [haslett "0.1.6"]
-                 [environ "1.1.0"]]
+                 [day8.re-frame/http-fx "0.1.6"]]
 
   :min-lein-version "2.0.0"
   

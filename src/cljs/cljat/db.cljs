@@ -2,10 +2,6 @@
   (:require-macros
    [cljs.core.async.macros :refer [go]])
   (:require [cljs.reader]
-            [cljat.env :as env]
-            [haslett.client :as ws]
-            [haslett.format :as fmt]
-            [cljs.core.async :refer [<!]]
             [cljs.spec.alpha :as s]
             [re-frame.core :as re-frame]))
 
@@ -19,12 +15,12 @@
                    #(map? %)
                    #(sorted? %)
                    ))
-(s/def ::login boolean?)
+(s/def ::login (s/nilable string?))
 (s/def ::db (s/keys :req-un [::messages ::ws ::login]))
 
 (def default-db {:messages (sorted-map)
-                 :ws (go (<! (ws/connect (str "ws://" env/domain "/ws") {:format fmt/edn})))
-                 :login false})
+                 :ws nil
+                 :login nil})
 
 (def messages-ls-key "cljat-reframe-messages")
 
@@ -55,3 +51,19 @@
           (into (sorted-map)
                 (some->> (.getItem js/localStorage login-ls-key)
                          (cljs.reader/read-string))))))
+
+(def login-ls-key "cljat-reframe-")
+
+(defn login->local-store
+  "Puts login into localStorage"
+  [login]
+  (.setItem js/localStorage login-ls-key (str login)))
+
+(re-frame/reg-cofx
+ :local-store-login
+ (fn [cofx _]
+   (assoc cofx :local-store-login
+          (into (sorted-map)
+                (some->> (.getItem js/localStorage login-ls-key)
+                         (cljs.reader/read-string))))))
+
