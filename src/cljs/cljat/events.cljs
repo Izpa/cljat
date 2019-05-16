@@ -31,15 +31,15 @@
  (fn [db [_ login]]
    (go
      (let [ws (<! (ws-client/connect (str "ws://" env/domain "/ws")))]
-       (reg-ws-dispatcher ws)
-       (merge db {:ws ws
-                  :login login
-                  :error nil})))))
+       (dispatch [:merge-db (merge db {:ws ws :login login :error nil})])
+       (reg-ws-dispatcher ws)))
+   db))
+
 
 (reg-event-db
- :error
- (fn [db [_ error]]
-   (assoc db :error error)))
+ :merge-db
+ (fn [db [_ to-merge]]
+   (merge db to-merge)))
 
 (reg-event-fx
  :login-request
@@ -49,7 +49,7 @@
                  :on-success [:login login]
                  :response-format (ajax/json-response-format {:keywords? true})
                  :format (ajax/json-request-format)
-                 :on-failure [:error "Incorrect password for exist user"]
+                 :on-failure [:merge-db {:error "Incorrect password for exist user"}]
                  :body (doto (js/FormData.)
                          (.append "login" login)
                          (.append "password" password))}}))
@@ -76,6 +76,5 @@
 
 (reg-event-db
  :send-message
- (fn [{ws :ws} text]
-   (go (>! (:sink ws)
-           {:message text}))))
+ (fn [{ws :ws} [_ text]]
+   (go (>! (:sink ws) text))))

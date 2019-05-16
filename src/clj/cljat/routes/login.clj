@@ -21,7 +21,7 @@
                       session :session}]
   (if-let [user (auth-user! login password)]
     (assoc (response/ok  "{\"status\": \"success\"}")
-           :session (assoc session :identity (:id user)))
+           :session (assoc session :identity login))
     (response/unauthorized)))
 
 (defn logout-handler [{session :session}]

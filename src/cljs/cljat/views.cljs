@@ -12,7 +12,7 @@
     (let [username (reagent/atom "")
           password (reagent/atom "")
           send #(let [usr (-> @username str str/trim)
-                    pass (-> @password str str/trim)]
+                      pass (-> @password str str/trim)]
                   (dispatch [:login-request usr pass]))]
       [:div
        [:input {:type "text"
