@@ -26,7 +26,7 @@
                 :value @password
                 :on-change   #(reset! password (-> % .-target .-value))
                 :on-key-down #(when (= (.-which %) 13) (send))}]
-       [:button  {:on-click send} "Login"]
+       [:button#login  {:on-click send} "Login"]
        [error]])))
 
 (defn message [{:keys [id author timestamp text]}]
@@ -53,12 +53,11 @@
                 :auto-focus true
                 :on-change   #(reset! val (-> % .-target .-value))
                 :on-key-down #(when (= (.-which %) 13) (send))}]
-       [:button  {:on-click send} "Send"]])))
+       [:button#send  {:on-click send} "Send"]])))
 
 (defn logout []
-  (let [click (dispatch [:logout-request])]
-    (fn []
-      [:button  {:on-click click} "Logout"])))
+  (fn []
+    [:button#logout  {:on-click #(dispatch [:logout-request])} "Logout"]))
 
 (defn chat []
   [:div
