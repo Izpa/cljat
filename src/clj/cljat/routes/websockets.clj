@@ -20,8 +20,9 @@
 
 (defn notify-clients [message {{author :identity}:session}]
   (log/info "new message: " message "from user-id:" author)
-  (let [message (-> (db/create-message! {:text message :author author})
-                    (clojure.set/rename-keys {:message_text :text :message_timestamp :timestamp}))
+  (let [message (clojure.set/rename-keys
+                 (db/create-message! {:text message, :author author})
+                 {:message_text :text, :message_timestamp :timestamp})
         timestamp (str (:timestamp message))
         message (-> message
                     (assoc :timestamp timestamp)

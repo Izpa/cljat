@@ -23,8 +23,7 @@
 
 (defn reg-ws-dispatcher [ws]
   (go-loop []
-    (when-let [message (-> (<! (:source ws))
-                           (#(t/read (t/reader :json) %)))]
+    (when-let [message (t/read (t/reader :json)  (<! (:source ws)))]
       (dispatch [:receive-message message])
       (recur))))
 
