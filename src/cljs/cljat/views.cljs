@@ -14,7 +14,7 @@
                     pass (-> @password str str/trim)]
                 (dispatch [:login-request usr pass]))]
     (fn []
-      [:div
+      [:div.inputs
        [:input {:type "text"
                 :placeholder "Username"
                 :value @username
@@ -26,19 +26,20 @@
                 :value @password
                 :on-change   #(reset! password (-> % .-target .-value))
                 :on-key-down #(when (= (.-which %) 13) (send))}]
-       [:button#login  {:on-click send} "Login"]
+       [:button  {:on-click send} "Login"]
        [error]])))
 
-(defn message [{:keys [id author timestamp text]}]
-  [:li
-   [:p author]
-   [:p timestamp]
-   [:p text]])
+(defn message [{:keys [author timestamp text]} login]
+  (let [is-outgoing-message (= author login)]
+    [(if is-outgoing-message :div.chat :div.chat.chat_other)
+     (if (not is-outgoing-message) [:div.chat_name author])
+     [:div.chat_message text]
+     [:div.chat_name timestamp]]))
 
-(defn messages []
-  [:ul#messages
+(defn messages [login]
+  [:div#chat_s
    (for [msg @(subscribe [:messages])]
-     ^{:key (:id msg)} [message msg])])
+     ^{:key (:id msg)} [message msg login])])
 
 (defn send-message []
   (let [val (reagent/atom "")
@@ -46,26 +47,29 @@
                 (dispatch [:send-message v])
                 (reset! val ""))]
     (fn []
-      [:div
+      [:div.inputs
        [:input {:type "text"
                 :placeholder "Type your message here"
                 :value @val
                 :auto-focus true
                 :on-change   #(reset! val (-> % .-target .-value))
                 :on-key-down #(when (= (.-which %) 13) (send))}]
-       [:button#send  {:on-click send} "Send"]])))
+       [:button  {:on-click send} "Send"]])))
 
 (defn logout []
   (fn []
-    [:button#logout  {:on-click #(dispatch [:logout-request])} "Logout"]))
+    [:div.chat_header
+     [:button {:on-click #(dispatch [:logout-request])} "Logout"]]))
 
-(defn chat []
+(defn chat [login]
   [:div
    [logout]
-   [messages]
+   [messages login]
    [send-message]])
 
 (defn cljat-app []
-  (if (nil? @(subscribe [:login]))
-    [login]
-    [chat]))
+  (let [l @(subscribe [:login])
+        elem (if (nil? l)
+               [login]
+               [chat l])]
+    [:div#chat elem]))
