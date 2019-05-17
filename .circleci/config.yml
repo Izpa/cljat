@@ -16,7 +16,4 @@ jobs:
           paths:
             - ~/.m2
           key: cci-demo-clojure-{{ checksum "project.clj" }}
-      - run: lein kibit, uberjar
-      - store_artifacts:
-          path: target/uberjar/cci-demo-clojure.jar
-          destination: uberjar
+      - run: lein kibit
