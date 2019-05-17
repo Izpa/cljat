@@ -78,6 +78,7 @@
                  :pretty-print false
                  :infer-externs true
                  :closure-warnings
+                 :closure-defines {(System/getenv "DOMAIN") ~domain}
                  {:externs-validation :off :non-standard-jsdoc :off}
                  :externs ["react/externs/react.js"]}}}}
              
@@ -116,6 +117,7 @@
                       :asset-path "/js/out"
                       :source-map true
                       :main "cljat.app"
+                      :closure-defines {(System/getenv "DOMAIN") ~domain}
                       :pretty-print true}}}}
                   
                   
@@ -132,6 +134,7 @@
                    {:test
                     {:source-paths ["src/cljc" "src/cljs" "test/cljs"]
                      :compiler
+                     :closure-defines {(System/getenv "DOMAIN") ~domain}
                      {:output-to "target/test.js"
                       :main "cljat.doo-runner"
                       :optimizations :whitespace

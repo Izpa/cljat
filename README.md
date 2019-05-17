@@ -1,8 +1,10 @@
 # cljat
 
+Simple chat.
+
 generated using Luminus version "3.32"
 
-FIXME
+
 
 ## Prerequisites
 
@@ -14,7 +16,13 @@ You will need [Leiningen][1] 2.0 or above installed.
 
 To start a web server for the application, run:
 
-    lein run 
+    lein run
+    
+For migraions run:
+
+    lein run migrate
+    
+You need provide DATABASE_URL and DOMAIN environment variables
 
 ## License
 
