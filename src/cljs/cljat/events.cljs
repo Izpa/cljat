@@ -32,7 +32,7 @@
  :login
  (fn [db [_ login]]
    (go
-     (let [ws (<! (ws-client/connect (str "ws://" env/domain "/ws")))]
+     (let [ws (<! (ws-client/connect (str "ws" (if env/use-http "" "s") "://" env/domain "/ws")))]
        (dispatch [:merge-db (merge db {:ws ws :login login :error nil})])
        (reg-ws-dispatcher ws)))
    db))
