@@ -1,6 +1,6 @@
 # cljat
 
-Simple chat.
+Simple chat with auth and websockets.
 
 generated using Luminus version "3.32"
 

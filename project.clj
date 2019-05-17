@@ -1,6 +1,6 @@
 (defproject cljat "0.1.0-SNAPSHOT"
 
-  :description "FIXME: write description"
+  :description "Simple chat with auth and websockets"
   :url "http://example.com/FIXME"
 
   :dependencies [[buddy "2.0.0"]
@@ -112,7 +112,8 @@
                       :closure-defines {"re_frame.trace.trace_enabled_QMARK_" true
                                         "cljat.env.domain" #=(eval (System/getenv "DOMAIN"))}
                       :optimizations :none
-                      :preloads [re-frisk.preload]
+                      :preloads [re-frisk.preload
+                                 devtools.preload]
                       :output-to "target/cljsbuild/public/js/app.js"
                       :asset-path "/js/out"
                       :source-map true
