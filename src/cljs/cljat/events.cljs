@@ -46,6 +46,7 @@
 (reg-event-fx
  :login-request
  (fn [_ [_ login password]]
+   (print env/use-http)
    {:http-xhrio {:method :post
                  :uri (str "http" (if env/use-http "" "s") "://" env/domain "/login")
                  :on-success [:login login]
@@ -60,7 +61,7 @@
  :logout-request
  (fn [{:keys [db]} _]
    {:http-xhrio {:method :get
-                 :uri (str "http://" env/domain "/logout")
+                 :uri (str "http" (if env/use-http "" "s") "://" env/domain "/logout")
                  :response-format (ajax/json-response-format {:keywords? true})
                  :format (ajax/json-request-format)
                  :on-success [:logout]}}))

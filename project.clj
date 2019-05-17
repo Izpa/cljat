@@ -112,7 +112,7 @@
                      {:output-dir "target/cljsbuild/public/js/out"
                       :closure-defines {"re_frame.trace.trace_enabled_QMARK_" true
                                         "cljat.env.domain" #=(eval (or (System/getenv "DOMAIN") "localhost:3000"))
-                                        "cljat.env.use-http" #=(eval (or (System/getenv "USE_HTTP") true))}
+                                        "cljat.env.use-http" #=(eval (or (System/getenv "USE_HTTP") false))}
                       :optimizations :none
                       :preloads [re-frisk.preload
                                  devtools.preload]
@@ -137,7 +137,7 @@
                     {:source-paths ["src/cljc" "src/cljs" "test/cljs"]
                      :compiler
                      :closure-defines {"cljat.env.domain" #=(eval (or (System/getenv "DOMAIN") "localhost:3000"))
-                                       "cljat.env.use-http" #=(eval (or (System/getenv "USE_HTTP") true))}
+                                       "cljat.env.use-http" #=(eval (or (System/getenv "USE_HTTP") false))}
                      {:output-to "target/test.js"
                       :main "cljat.doo-runner"
                       :optimizations :whitespace
