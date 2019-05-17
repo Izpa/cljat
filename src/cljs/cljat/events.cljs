@@ -47,7 +47,7 @@
  :login-request
  (fn [_ [_ login password]]
    {:http-xhrio {:method :post
-                 :uri (str "http://" env/domain "/login")
+                 :uri (str "http" (if env/use-http "" "s") "://" env/domain "/login")
                  :on-success [:login login]
                  :response-format (ajax/json-response-format {:keywords? true})
                  :format (ajax/json-request-format)
