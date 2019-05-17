@@ -78,7 +78,7 @@
                  :pretty-print false
                  :infer-externs true
                  :closure-warnings {:externs-validation :off :non-standard-jsdoc :off}
-                 :closure-defines {"cljat.env.domain" #=(eval (System/getenv "DOMAIN"))}
+                 :closure-defines {"cljat.env.domain" #=(eval (or (System/getenv "DOMAIN") "localhost:3000"))}
                  :externs ["react/externs/react.js"]}}}}
              
              :aot :all
@@ -110,7 +110,7 @@
                      :compiler
                      {:output-dir "target/cljsbuild/public/js/out"
                       :closure-defines {"re_frame.trace.trace_enabled_QMARK_" true
-                                        "cljat.env.domain" #=(eval (System/getenv "DOMAIN"))}
+                                        "cljat.env.domain" #=(eval (or (System/getenv "DOMAIN") "localhost:3000"))}
                       :optimizations :none
                       :preloads [re-frisk.preload
                                  devtools.preload]
@@ -134,7 +134,7 @@
                    {:test
                     {:source-paths ["src/cljc" "src/cljs" "test/cljs"]
                      :compiler
-                     :closure-defines {"cljat.env.domain" #=(eval (System/getenv "DOMAIN"))}
+                     :closure-defines {"cljat.env.domain" #=(eval (or (System/getenv "DOMAIN") "localhost:3000"))}
                      {:output-to "target/test.js"
                       :main "cljat.doo-runner"
                       :optimizations :whitespace
