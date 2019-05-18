@@ -6,11 +6,11 @@
    [cljs.spec.alpha :as s]
    [cljat.env :as env]
    [haslett.client :as ws-client]
-   [haslett.format :as fmt]
    [day8.re-frame.http-fx]
    [ajax.core :as ajax]
    [cljs.core.async :refer [<! >!]]
-   [cognitect.transit :as t]))
+   [cognitect.transit :as t]
+   [cemerick.url :refer [url]]))
 
 (reg-event-db
  :initialise-db
@@ -26,11 +26,16 @@
       (dispatch [:receive-message message])
       (recur))))
 
+(defn http-url->ws [http-url]
+  (let [parsed-http-url (url http-url)
+        ws-protocol (if (= (:protocol parsed-http-url) "https") "wss" "ws")]
+    (str (assoc parsed-http-url :protocol ws-protocol))))
+
 (reg-event-db
  :login
  (fn [db [_ login]]
    (go
-     (let [ws (<! (ws-client/connect (str "ws" (if env/use-http "" "s") "://" env/domain "/ws")))]
+     (let [ws (<! (ws-client/connect (str (http-url->ws env/api-url) "ws")))]
        (dispatch [:merge-db (merge db {:ws ws :login login :error nil})])
        (reg-ws-dispatcher ws)))
    db))
@@ -44,7 +49,7 @@
  :login-request
  (fn [_ [_ login password]]
    {:http-xhrio {:method :post
-                 :uri (str "http" (if env/use-http "" "s") "://" env/domain "/login")
+                 :uri (str env/api-url "login")
                  :on-success [:login login]
                  :response-format (ajax/json-response-format {:keywords? true})
                  :format (ajax/json-request-format)
@@ -58,7 +63,7 @@
  :logout-request
  (fn [{:keys [db]} _]
    {:http-xhrio {:method :get
-                 :uri (str "http" (if env/use-http "" "s") "://" env/domain "/logout")
+                 :uri (str env/api-url "logout")
                  :response-format (ajax/json-response-format {:keywords? true})
                  :headers {"X-CSRF-Token" js/csrfToken}
                  :format (ajax/json-request-format)
