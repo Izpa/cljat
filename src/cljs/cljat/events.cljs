@@ -10,7 +10,27 @@
    [ajax.core :as ajax]
    [cljs.core.async :refer [<! >!]]
    [cognitect.transit :as t]
-   [cemerick.url :refer [url]]))
+   [cemerick.url :refer [url]]
+   [clojure.walk :refer [keywordize-keys]]))
+
+(defn reg-ws-dispatcher [ws]
+  (go-loop []
+    (when-let [messages (<! (:source ws))]
+      (dispatch [:receive-messages messages])
+      (recur))))
+
+(defn http-url->ws [http-url]
+  (let [parsed-http-url (url http-url)
+        ws-protocol (if (= (:protocol parsed-http-url) "https") "wss" "ws")]
+    (str (assoc parsed-http-url :protocol ws-protocol))))
+
+(defn api-ajax-request [path params]
+  (let [request {:method :get
+                 :uri (str env/api-url path)
+                 :format (ajax/json-request-format)
+                 :response-format (ajax/raw-response-format)
+                 :headers {"X-CSRF-Token" js/csrfToken}}]
+    {:http-xhrio (merge request params)}))
 
 (reg-event-db
  :initialise-db
@@ -20,16 +40,21 @@
     :login nil
     :error nil}))
 
-(defn reg-ws-dispatcher [ws]
-  (go-loop []
-    (when-let [message (t/read (t/reader :json)  (<! (:source ws)))]
-      (dispatch [:receive-message message])
-      (recur))))
+(reg-event-db
+ :merge-db
+ (fn [db [_ to-merge]]
+   (merge db to-merge)))
 
-(defn http-url->ws [http-url]
-  (let [parsed-http-url (url http-url)
-        ws-protocol (if (= (:protocol parsed-http-url) "https") "wss" "ws")]
-    (str (assoc parsed-http-url :protocol ws-protocol))))
+(reg-event-fx
+ :login-request
+ (fn [_ [_ login password]]
+   (let [params {:method :post
+                 :body (doto (js/FormData.)
+                         (.append "login" login)
+                         (.append "password" password))
+                 :on-success [:login login]
+                 :on-failure [:merge-db {:error "Incorrect password for exist user"}]}]
+     (assoc (api-ajax-request "login" params) :dispatch [:messages-history-request]))))
 
 (reg-event-db
  :login
@@ -40,40 +65,35 @@
        (reg-ws-dispatcher ws)))
    db))
 
-(reg-event-db
- :merge-db
- (fn [db [_ to-merge]]
-   (merge db to-merge)))
-
-(reg-event-fx
- :login-request
- (fn [_ [_ login password]]
-   {:http-xhrio {:method :post
-                 :uri (str env/api-url "login")
-                 :on-success [:login login]
-                 :response-format (ajax/json-response-format {:keywords? true})
-                 :format (ajax/json-request-format)
-                 :on-failure [:merge-db {:error "Incorrect password for exist user"}]
-                 :headers {"X-CSRF-Token" js/csrfToken}
-                 :body (doto (js/FormData.)
-                         (.append "login" login)
-                         (.append "password" password))}}))
-
 (reg-event-fx
  :logout-request
- (fn [{:keys [db]} _]
-   {:http-xhrio {:method :get
-                 :uri (str env/api-url "logout")
-                 :response-format (ajax/json-response-format {:keywords? true})
-                 :headers {"X-CSRF-Token" js/csrfToken}
-                 :format (ajax/json-request-format)
-                 :on-success [:logout]}}))
+ (fn []
+   (api-ajax-request "logout" {:on-success [:logout]})))
 
 (reg-event-db
  :logout
  (fn [{ws :ws :as db} _]
    (ws-client/close ws)
    (merge db {:login nil :ws nil})))
+
+(reg-event-fx
+ :messages-history-request
+ (fn [{{messages :messages} :db} _]
+   (let [last-id (last (keys messages))
+         params (when last-id [:params {:id last-id}])
+         request (conj {:on-success [:receive-messages]} params)]
+     (api-ajax-request "messages" request))))
+
+(reg-event-db
+ :receive-messages
+ (fn [db [_ response]]
+   (let [read-json #(t/read (t/reader :json) %)
+         messages (-> response
+                      (#(t/read (t/reader :json) %))
+                      (get "messages"))
+         messages (map keywordize-keys messages)
+         message->db #(assoc-in %1 [:messages (:id %2)] %2)]
+     (reduce message->db db messages))))
 
 (reg-event-db
  :receive-message

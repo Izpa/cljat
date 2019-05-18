@@ -4,7 +4,6 @@
    [buddy.hashers :as hashers]
    [cljat.middleware :as middleware]
    [ring.util.http-response :as response]
-   [clojure.tools.logging :as log]
    [clojure.data.json :as json]))
 
 (def status-success (json/write-str {:status "success"}))

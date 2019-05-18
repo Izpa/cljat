@@ -17,9 +17,9 @@ INSERT INTO messages
 VALUES (:text, :author)
 RETURNING *
 
--- :name get-old-messages :*
+-- :name get-messages :? :*
 -- :doc retrieves 10 messages records with id <
 SELECT * FROM messages
-WHERE messages.id < :last_id
-ORDER BY message.id
+--~ (when (:id params) "WHERE messages.id < :id")
+ORDER BY messages.id DESC
 LIMIT 10

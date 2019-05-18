@@ -7,6 +7,8 @@
    [clojure.tools.logging :as log]
    [clojure.set]
    [cljat.middleware :as middleware]
+   [clojure.data.json :as json]
+   [cljat.routes.messages :refer [db-message->json]]
    [clojure.data.json :as json]))
 
 (defonce channels (atom #{}))
@@ -21,16 +23,11 @@
 
 (defn notify-clients [message {{author :identity} :session}]
   (log/info "new message: " message "from user-id:" author)
-  (let [message (clojure.set/rename-keys
-                 (db/create-message! {:text message, :author author})
-                 {:message_text :text, :message_timestamp :timestamp})
-        timestamp (str (:timestamp message))
-        message (-> message
-                    (assoc :timestamp timestamp)
-                    (json/write-str))]
+  (let [message (db/create-message! {:text message, :author author})
+        json-message (json/write-str {:messages [(db-message->json message)]})]
     (log/info "message: " message)
     (doseq [channel @channels]
-      (send! channel message))))
+      (send! channel json-message))))
 
 (defn ws-handler [request]
   (with-channel request channel

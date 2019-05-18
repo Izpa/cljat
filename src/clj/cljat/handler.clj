@@ -5,6 +5,7 @@
    [cljat.routes.home :refer [home-routes]]
    [cljat.routes.websockets :refer [websocket-routes]]
    [cljat.routes.login :refer [login-routes]]
+   [cljat.routes.messages :refer [messages-routes]]
    [reitit.ring :as ring]
    [ring.middleware.content-type :refer [wrap-content-type]]
    [ring.middleware.webjars :refer [wrap-webjars]]
@@ -22,7 +23,8 @@
     (ring/router
      [(home-routes)
       (websocket-routes)
-      (login-routes)])
+      (login-routes)
+      (messages-routes)])
     (ring/routes
      (ring/create-resource-handler
       {:path "/"})
