@@ -5,6 +5,7 @@
    [cljat.db.core :as db]
    [cognitect.transit :as t]
    [clojure.tools.logging :as log]
+   [clojure.set]
    [cljat.middleware :as middleware]
    [clojure.data.json :as json]))
 
@@ -18,10 +19,11 @@
   (log/info "channel closed:" status)
   (swap! channels #(remove #{channel} %)))
 
-(defn notify-clients [message {{author :identity}:session}]
+(defn notify-clients [message {{author :identity} :session}]
   (log/info "new message: " message "from user-id:" author)
-  (let [message (-> (db/create-message! {:text message :author author})
-                    (clojure.set/rename-keys {:message_text :text :message_timestamp :timestamp}))
+  (let [message (clojure.set/rename-keys
+                 (db/create-message! {:text message, :author author})
+                 {:message_text :text, :message_timestamp :timestamp})
         timestamp (str (:timestamp message))
         message (-> message
                     (assoc :timestamp timestamp)

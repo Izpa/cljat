@@ -1,20 +1,20 @@
 (ns cljat.middleware
   (:require
-    [cljat.env :refer [defaults]]
-    [cheshire.generate :as cheshire]
-    [cognitect.transit :as transit]
-    [clojure.tools.logging :as log]
-    [cljat.layout :refer [error-page]]
-    [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
-    [cljat.middleware.formats :as formats]
-    [muuntaja.middleware :refer [wrap-format wrap-params]]
-    [cljat.config :refer [env]]
-    [ring-ttl-session.core :refer [ttl-memory-store]]
-    [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
-    [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
-    [buddy.auth.accessrules :refer [restrict]]
-    [buddy.auth :refer [authenticated?]]
-    [buddy.auth.backends.session :refer [session-backend]]))
+   [cljat.env :refer [defaults]]
+   [cheshire.generate :as cheshire]
+   [cognitect.transit :as transit]
+   [clojure.tools.logging :as log]
+   [cljat.layout :refer [error-page]]
+   [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
+   [cljat.middleware.formats :as formats]
+   [muuntaja.middleware :refer [wrap-format wrap-params]]
+   [cljat.config :refer [env]]
+   [ring-ttl-session.core :refer [ttl-memory-store]]
+   [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
+   [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
+   [buddy.auth.accessrules :refer [restrict]]
+   [buddy.auth :refer [authenticated?]]
+   [buddy.auth.backends.session :refer [session-backend]]))
 
 (defn wrap-internal-error [handler]
   (fn [req]
@@ -28,12 +28,11 @@
 
 (defn wrap-csrf [handler]
   (wrap-anti-forgery
-    handler
-    {:error-response
-     (error-page
-       {:status 403
-        :title "Invalid anti-forgery token"})}))
-
+   handler
+   {:error-response
+    (error-page
+     {:status 403
+      :title "Invalid anti-forgery token"})}))
 
 (defn wrap-formats [handler]
   (let [wrapped (-> handler wrap-params (wrap-format formats/instance))]
@@ -44,8 +43,8 @@
 
 (defn on-error [request response]
   (error-page
-    {:status 403
-     :title (str "Access to " (:uri request) " is not authorized")}))
+   {:status 403
+    :title (str "Access to " (:uri request) " is not authorized")}))
 
 (defn wrap-restricted [handler]
   (restrict handler {:handler authenticated?
@@ -61,7 +60,7 @@
   (-> ((:middleware defaults) handler)
       wrap-auth
       (wrap-defaults
-        (-> site-defaults
-            (assoc-in [:security :anti-forgery] false)
-            (assoc-in  [:session :store] (ttl-memory-store (* 60 30)))))
+       (-> site-defaults
+           (assoc-in [:security :anti-forgery] false)
+           (assoc-in  [:session :store] (ttl-memory-store (* 60 30)))))
       wrap-internal-error))

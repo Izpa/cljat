@@ -1,12 +1,14 @@
 (ns cljat.db.core
   (:require
-    [cheshire.core :refer [generate-string parse-string]]
-    [clojure.java.jdbc :as jdbc]
-    [clojure.tools.logging :as log]
-    [conman.core :as conman]
-    [java-time :as jt]
-    [cljat.config :refer [env]]
-    [mount.core :refer [defstate]])
+   [cheshire.core :refer [generate-string parse-string]]
+   [clojure.java.jdbc :as jdbc]
+   [clojure.tools.logging :as log]
+   [clojure.string]
+   [conman.core :as conman]
+   [java-time :as jt]
+   [cljat.config :refer [env]]
+   [java-time.pre-java8]
+   [mount.core :refer [defstate]])
   (:import org.postgresql.util.PGobject
            java.sql.Array
            clojure.lang.IPersistentMap
@@ -24,9 +26,8 @@
 
 (conman/bind-connection *db* "sql/queries.sql")
 
-
 (extend-protocol jdbc/IResultSetReadColumn
-    java.sql.Timestamp
+  java.sql.Timestamp
   (result-set-read-column [v _2 _3]
     (.toLocalDateTime v))
   java.sql.Date
@@ -58,12 +59,12 @@
     (let [conn      (.getConnection stmt)
           meta      (.getParameterMetaData stmt)
           type-name (.getParameterTypeName meta idx)]
-      (if-let [elem-type (when (= (first type-name) \_) (apply str (rest type-name)))]
+      (if-let [elem-type (when (= (first type-name) \_) (clojure.string/join (rest type-name)))]
         (.setObject stmt idx (.createArrayOf conn elem-type (to-array v)))
         (.setObject stmt idx (to-pg-json v))))))
 
 (extend-protocol jdbc/ISQLValue
-    java.util.Date
+  java.util.Date
   (sql-value [v]
     (java.sql.Timestamp. (.getTime v)))
   java.time.LocalTime

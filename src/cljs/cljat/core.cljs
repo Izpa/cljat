@@ -4,10 +4,8 @@
             [re-frame.core :as reframe]
             [cljat.events]
             [cljat.subs]
-            [cljat.views]
-            [devtools.core :as devtools]))
+            [cljat.views]))
 
-(devtools/install!)
 (enable-console-print!)
 
 (reframe/dispatch-sync [:initialise-db])

@@ -1,6 +1,6 @@
 (defproject cljat "0.1.0-SNAPSHOT"
 
-  :description "FIXME: write description"
+  :description "Simple chat with auth and websockets"
   :url "http://example.com/FIXME"
 
   :dependencies [[buddy "2.0.0"]
@@ -53,7 +53,9 @@
   :main ^:skip-aot cljat.core
 
   :plugins [[lein-cljsbuild "1.1.7"]
-            [lein-kibit "0.1.2"]]
+            [lein-kibit "0.1.2"]
+            [lein-cljfmt "0.6.4"]
+            [jonase/eastwood "0.3.5"]]
   :clean-targets ^{:protect false}
   [:target-path [:cljsbuild :builds :app :compiler :output-dir] [:cljsbuild :builds :app :compiler :output-to]]
   :figwheel
@@ -77,8 +79,9 @@
                  :optimizations :advanced
                  :pretty-print false
                  :infer-externs true
-                 :closure-warnings
-                 {:externs-validation :off :non-standard-jsdoc :off}
+                 :closure-warnings {:externs-validation :off :non-standard-jsdoc :off}
+                 :closure-defines {"cljat.env.domain" #=(eval (or (System/getenv "DOMAIN") "localhost:3000"))
+                                   "cljat.env.use-http" #=(eval (or (System/getenv "USE_HTTP") false))}
                  :externs ["react/externs/react.js"]}}}}
              
              :aot :all
@@ -109,9 +112,12 @@
                      :figwheel {:on-jsload "cljat.core/mount-components"}
                      :compiler
                      {:output-dir "target/cljsbuild/public/js/out"
-                      :closure-defines {"re_frame.trace.trace_enabled_QMARK_" true}
+                      :closure-defines {"re_frame.trace.trace_enabled_QMARK_" true
+                                        "cljat.env.domain" #=(eval (or (System/getenv "DOMAIN") "localhost:3000"))
+                                        "cljat.env.use-http" #=(eval (or (System/getenv "USE_HTTP") false))}
                       :optimizations :none
-                      :preloads [re-frisk.preload]
+                      :preloads [re-frisk.preload
+                                 devtools.preload]
                       :output-to "target/cljsbuild/public/js/app.js"
                       :asset-path "/js/out"
                       :source-map true
@@ -127,11 +133,13 @@
                                (pjstadig.humane-test-output/activate!)]}
    :project/test {:jvm-opts ["-Dconf=test-config.edn"]
                   :resource-paths ["env/test/resources"]
-                  :cljsbuild 
+                  :cljsbuild
                   {:builds
                    {:test
                     {:source-paths ["src/cljc" "src/cljs" "test/cljs"]
                      :compiler
+                     :closure-defines {"cljat.env.domain" #=(eval (or (System/getenv "DOMAIN") "localhost:3000"))
+                                       "cljat.env.use-http" #=(eval (or (System/getenv "USE_HTTP") false))}
                      {:output-to "target/test.js"
                       :main "cljat.doo-runner"
                       :optimizations :whitespace

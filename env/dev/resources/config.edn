@@ -1,2 +1,3 @@
 {:database-url "postgresql://postgres:postgres@localhost:5432/cljat"
- :domain "localhost:3000"}
+ :domain "localhost:3000"
+ :use-http false}

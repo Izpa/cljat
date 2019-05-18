@@ -20,11 +20,9 @@
     :login nil
     :error nil}))
 
-
 (defn reg-ws-dispatcher [ws]
   (go-loop []
-    (when-let [message (-> (<! (:source ws))
-                           (#(t/read (t/reader :json) %)))]
+    (when-let [message (t/read (t/reader :json)  (<! (:source ws)))]
       (dispatch [:receive-message message])
       (recur))))
 
@@ -32,11 +30,10 @@
  :login
  (fn [db [_ login]]
    (go
-     (let [ws (<! (ws-client/connect (str "ws://" env/domain "/ws")))]
+     (let [ws (<! (ws-client/connect (str "ws" (if env/use-http "" "s") "://" env/domain "/ws")))]
        (dispatch [:merge-db (merge db {:ws ws :login login :error nil})])
        (reg-ws-dispatcher ws)))
    db))
-
 
 (reg-event-db
  :merge-db
@@ -46,8 +43,9 @@
 (reg-event-fx
  :login-request
  (fn [_ [_ login password]]
+   (print env/use-http)
    {:http-xhrio {:method :post
-                 :uri (str "http://" env/domain "/login")
+                 :uri (str "http" (if env/use-http "" "s") "://" env/domain "/login")
                  :on-success [:login login]
                  :response-format (ajax/json-response-format {:keywords? true})
                  :format (ajax/json-request-format)
@@ -60,7 +58,7 @@
  :logout-request
  (fn [{:keys [db]} _]
    {:http-xhrio {:method :get
-                 :uri (str "http://" env/domain "/logout")
+                 :uri (str "http" (if env/use-http "" "s") "://" env/domain "/logout")
                  :response-format (ajax/json-response-format {:keywords? true})
                  :format (ajax/json-request-format)
                  :on-success [:logout]}}))
