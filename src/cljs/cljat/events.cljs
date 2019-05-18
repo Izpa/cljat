@@ -43,13 +43,13 @@
 (reg-event-fx
  :login-request
  (fn [_ [_ login password]]
-   (print env/use-http)
    {:http-xhrio {:method :post
                  :uri (str "http" (if env/use-http "" "s") "://" env/domain "/login")
                  :on-success [:login login]
                  :response-format (ajax/json-response-format {:keywords? true})
                  :format (ajax/json-request-format)
                  :on-failure [:merge-db {:error "Incorrect password for exist user"}]
+                 :headers {"X-CSRF-Token" js/csrfToken}
                  :body (doto (js/FormData.)
                          (.append "login" login)
                          (.append "password" password))}}))
@@ -60,6 +60,7 @@
    {:http-xhrio {:method :get
                  :uri (str "http" (if env/use-http "" "s") "://" env/domain "/logout")
                  :response-format (ajax/json-response-format {:keywords? true})
+                 :headers {"X-CSRF-Token" js/csrfToken}
                  :format (ajax/json-request-format)
                  :on-success [:logout]}}))
 

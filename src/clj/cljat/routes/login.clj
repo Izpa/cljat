@@ -4,7 +4,10 @@
    [buddy.hashers :as hashers]
    [cljat.middleware :as middleware]
    [ring.util.http-response :as response]
-   [clojure.tools.logging :as log]))
+   [clojure.tools.logging :as log]
+   [clojure.data.json :as json]))
+
+(def status-success (json/write-str {:status "success"}))
 
 (defn create-user!
   [login password]
@@ -20,17 +23,17 @@
 (defn login-handler [{{:keys [login password]} :params
                       session :session}]
   (if-let [user (auth-user! login password)]
-    (assoc (response/ok  "{\"status\": \"success\"}")
+    (assoc (response/ok status-success)
            :session (assoc session :identity login))
     (response/unauthorized)))
 
 (defn logout-handler [{session :session}]
-  (assoc (response/ok "{\"status\": \"success\"}")
+  (assoc (response/ok status-success)
          :session (dissoc session :identity)))
 
 (defn login-routes []
   [""
-   ;{:middleware [middleware/wrap-csrf
-    ;             middleware/wrap-formats]}
+   {:middleware [middleware/wrap-csrf
+                 middleware/wrap-formats]}
    ["/login" {:post login-handler}]
    ["/logout" {:get logout-handler}]])
