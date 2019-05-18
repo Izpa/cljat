@@ -22,6 +22,8 @@
                                          :placeholder "Login"
                                          :value @username
                                          :auto-focus true
+                                         :maxLength 30
+                                         :pattern "^(?=.{1,30}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$"
                                          :required true
                                          :on-change   #(reset! username (-> % .-target .-value))}]
        [:label.sr-only {:for "input-password"} "Password"]
@@ -29,6 +31,7 @@
                                             :placeholder "Password"
                                             :value @password
                                             :required true
+                                            :maxLength 300
                                             :on-change   #(reset! password (-> % .-target .-value))}]
        [:button.btn.btn-lg.btn-primary.btn-block {:type "submit"} "Login"]
        [error]])))
@@ -71,6 +74,7 @@
                                :value @val
                                :auto-focus true
                                :required true
+                               :maxLength 500
                                :on-change #(reset! val (-> % .-target .-value))}]
          [:div.input-group-append
           [:button.btn.btn-outline-success  {:type "submit"} "Send"]]]]])))

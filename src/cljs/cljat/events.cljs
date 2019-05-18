@@ -105,3 +105,9 @@
  (fn [{ws :ws :as db} [_ text]]
    (go (>! (:sink ws) text))
    db))
+
+(reg-event-db
+ :debug-print
+ (fn [db [_ params]]
+   (print params)
+   db))
