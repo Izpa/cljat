@@ -53,7 +53,9 @@
   :main ^:skip-aot cljat.core
 
   :plugins [[lein-cljsbuild "1.1.7"]
-            [lein-kibit "0.1.2"]]
+            [lein-kibit "0.1.2"]
+            [lein-cljfmt "0.6.4"]
+            [jonase/eastwood "0.3.5"]]
   :clean-targets ^{:protect false}
   [:target-path [:cljsbuild :builds :app :compiler :output-dir] [:cljsbuild :builds :app :compiler :output-to]]
   :figwheel

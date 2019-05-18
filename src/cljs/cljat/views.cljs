@@ -88,8 +88,8 @@
       [:div.box-header.with-border
        [:h3.box-title "Cljat"]
        [logout]]
-   [messages login]
-   [send-message]]]]])
+      [messages login]
+      [send-message]]]]])
 
 (defn cljat-app []
   (let [l @(subscribe [:login])]

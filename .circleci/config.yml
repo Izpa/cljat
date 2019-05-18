@@ -17,3 +17,5 @@ jobs:
             - ~/.m2
           key: cci-demo-clojure-{{ checksum "project.clj" }}
       - run: lein kibit
+      - run: lein cljfmt check
+      - run: lein eastwood

@@ -16,4 +16,4 @@ profiles.clj
 /log
 .rebel_readline_history
 .DS_Store
-
+.eastwood

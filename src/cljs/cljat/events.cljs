@@ -20,7 +20,6 @@
     :login nil
     :error nil}))
 
-
 (defn reg-ws-dispatcher [ws]
   (go-loop []
     (when-let [message (t/read (t/reader :json)  (<! (:source ws)))]
@@ -35,7 +34,6 @@
        (dispatch [:merge-db (merge db {:ws ws :login login :error nil})])
        (reg-ws-dispatcher ws)))
    db))
-
 
 (reg-event-db
  :merge-db
