@@ -23,7 +23,6 @@
                                          :value @username
                                          :auto-focus true
                                          :maxLength 30
-                                         :pattern "^(?=.{1,30}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$"
                                          :required true
                                          :on-change   #(reset! username (-> % .-target .-value))}]
        [:label.sr-only {:for "input-password"} "Password"]
@@ -54,7 +53,7 @@
   (if (= author login) [left-message message] [right-message message]))
 
 (defn messages [login]
-  [:div.box-body
+  [:div.box-body {:windowscroll (dispatch [:debug-print "azaza"])}
    [:div.direct-chat-messages
     (for [msg @(subscribe [:messages])]
       ^{:key (:id msg)} [message msg login])]])

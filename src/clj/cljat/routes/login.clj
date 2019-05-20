@@ -4,7 +4,8 @@
    [buddy.hashers :as hashers]
    [cljat.middleware :as middleware]
    [ring.util.http-response :as response]
-   [clojure.data.json :as json]))
+   [clojure.data.json :as json]
+   [struct.core :as st]))
 
 (def status-success (json/write-str {:status "success"}))
 
@@ -12,12 +13,22 @@
   [login password]
   (db/create-user! {:login login :password (hashers/derive password)}))
 
+(defn validate-auth [login password]
+  (let [schema {:login [[st/max-count 30]
+                        [st/min-count 1]]
+                :password [[st/max-count 300]
+                           [st/min-count 1]]}]
+    (st/validate {:login login
+                  :password password}
+                 schema)))
+
 (defn auth-user!
   [login password]
-  (let [user (db/get-user {:login login})]
-    (if (nil? user)
-      (create-user! login password)
-      (when (hashers/check password (:pass user)) user))))
+  (when (validate-auth login password)
+    (let [user (db/get-user {:login login})]
+      (if (nil? user)
+        (create-user! login password)
+        (when (hashers/check password (:pass user)) user)))))
 
 (defn login-handler [{{:keys [login password]} :params
                       session :session}]
