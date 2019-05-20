@@ -4,6 +4,13 @@ jobs:
     working_directory: ~/cci-demo-clojure
     docker:
       - image: circleci/clojure:lein-2.7.1
+        environment:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/cljat-test
+      - image: postgres:latest
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: cljat-test
     environment:
       LEIN_ROOT: nbd
       JVM_OPTS: -Xmx3200m
