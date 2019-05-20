@@ -4,7 +4,8 @@
    [cljat.middleware :as middleware]
    [ring.util.http-response :as response]
    [clojure.data.json :as json]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [clojure.tools.logging :as log]))
 
 (defn db-message->json [{text :message_text timestamp :message_timestamp :keys [id author]}]
   {:id id
@@ -17,7 +18,8 @@
                   (first))})
 
 (defn messages-handler [{{id :id} :params}]
-  (let [messages (map db-message->json (db/get-messages id))]
+  (log/info "request messages for id: " id)
+  (let [messages (map db-message->json (db/get-messages {:id id}))]
     (response/ok (json/write-str {:status "success" :messages messages}))))
 
 (defn messages-routes []

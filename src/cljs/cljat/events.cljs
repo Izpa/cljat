@@ -79,8 +79,8 @@
 (reg-event-fx
  :messages-history-request
  (fn [{{messages :messages} :db} _]
-   (let [last-id (last (keys messages))
-         params (when last-id [:params {:id last-id}])
+   (let [first-id (first (keys messages))
+         params (when first-id [:params {:id first-id}])
          request (conj {:on-success [:receive-messages]} params)]
      (api-ajax-request "messages" request))))
 
