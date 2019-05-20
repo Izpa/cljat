@@ -18,12 +18,8 @@ To start a web server for the application, run:
 
     lein run
     
-For migraions run:
+For migrations run:
 
     lein run migrate
     
 You need provide DATABASE_URL environment variable
-
-## License
-
-Copyright © 2019 FIXME
