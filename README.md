@@ -22,7 +22,7 @@ For migraions run:
 
     lein run migrate
     
-You need provide DATABASE_URL and DOMAIN environment variables
+You need provide DATABASE_URL environment variable
 
 ## License
 

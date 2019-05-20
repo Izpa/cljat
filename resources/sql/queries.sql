@@ -20,6 +20,6 @@ RETURNING *
 -- :name get-messages :? :*
 -- :doc retrieves 10 messages records with id <
 SELECT * FROM messages
---~ (when (:id params) "WHERE messages.id < :id")
+--~ (when (:id params) "WHERE messages.id < :id::int")
 ORDER BY messages.id DESC
 LIMIT 10

@@ -35,6 +35,9 @@
        [:button.btn.btn-lg.btn-primary.btn-block {:type "submit"} "Login"]
        [error]])))
 
+(defn get-old-messages []
+  [:button {:on-click #(dispatch [:messages-history-request])} "Get old messages"])
+
 (defn right-message [{:keys [author text timestamp]}]
   [:div.direct-chat-msg.right
    [:div.direct-chat-info.clearfix
@@ -54,6 +57,7 @@
 
 (defn messages [login]
   [:div.box-body
+   [get-old-messages]
    [:div.direct-chat-messages
     (for [msg @(subscribe [:messages])]
       ^{:key (:id msg)} [message msg login])]])
@@ -89,7 +93,7 @@
     [:div.col-12
      [:div.box.box-primary.direct-chat.direct-chat-primary
       [:div.box-header.with-border
-       [:h3.box-title "Cljat"]
+       [:h3.box-title (str "Cljat! You login as " login)]
        [logout]]
       [messages login]
       [send-message]]]]])
