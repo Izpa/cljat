@@ -1,4 +1,6 @@
-(ns cljat.env)
+(ns cljat.env
+  (:require
+   [cemerick.url :refer [url]]))
 
-(goog-define domain "localhost:3000")
-(goog-define use-http false)
+(goog-define custom-api-url false)
+(def api-url (or custom-api-url (str (url (-> js/window .-location .-href) "/"))))

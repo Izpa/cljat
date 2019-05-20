@@ -4,7 +4,7 @@ Simple chat with auth and websockets.
 
 generated using Luminus version "3.32"
 
-Example: https://cljat.herokuapp.com/
+Example: https://cljat.herokuapp.com/ (may be so slow)
 
 ## Prerequisites
 
