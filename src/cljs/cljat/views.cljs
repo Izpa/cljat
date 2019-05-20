@@ -93,7 +93,7 @@
     [:div.col-12
      [:div.box.box-primary.direct-chat.direct-chat-primary
       [:div.box-header.with-border
-       [:h3.box-title "Cljat"]
+       [:h3.box-title (str "Cljat! You login as " login)]
        [logout]]
       [messages login]
       [send-message]]]]])
