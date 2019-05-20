@@ -21,8 +21,8 @@
     (jdbc/db-set-rollback-only! t-conn)
     (is (= {:login "user" :pass "password"}
            (db/create-user!
-              t-conn
-              {:login "user"
-               :password "password"})))
+            t-conn
+            {:login "user"
+             :password "password"})))
     (is (= {:login "user" :pass "password"}
            (db/get-user t-conn {:login "user"})))))

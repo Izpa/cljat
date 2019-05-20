@@ -26,3 +26,4 @@ jobs:
       - run: lein kibit
       - run: lein cljfmt check
       - run: lein eastwood
+      - run: lein do test
