@@ -17,3 +17,4 @@ profiles.clj
 .rebel_readline_history
 .DS_Store
 .eastwood
+.idea
